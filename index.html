@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday! 🎂</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; }
+    body { font-family: 'Segoe UI', 'Hiragino Sans', 'Yu Gothic', sans-serif; }
+
+    /* ════════════════ Edit Mode ════════════════ */
+    #editMode {
+      display: none;
+      min-height: 100vh;
+      overflow-y: auto;
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 460px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 40px 36px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55),
+                  inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .card-head { text-align: center; margin-bottom: 32px; }
+
+    .card-emoji {
+      font-size: 3.2rem;
+      display: block;
+      margin-bottom: 8px;
+      animation: floatY 3s ease-in-out infinite;
+    }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-9px); }
+    }
+
+    .card-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 0 0 24px rgba(255,215,0,0.45);
+      letter-spacing: 0.02em;
+    }
+
+    .card-sub {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.38);
+      letter-spacing: 0.04em;
+    }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 7px;
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 15px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 11px;
+      color: #fff;
+      font-size: 0.93rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder { color: rgba(255,255,255,0.22); }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: rgba(255,215,0,0.55);
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 0 0 3px rgba(255,215,0,0.1);
+    }
+
+    .form-textarea { resize: vertical; min-height: 110px; line-height: 1.55; }
+
+    .btn-gen {
+      width: 100%;
+      padding: 14px;
+      margin-top: 6px;
+      background: linear-gradient(135deg, #f093fb, #f5576c 50%, #fda085);
+      border: none;
+      border-radius: 11px;
+      color: #fff;
+      font-size: 0.97rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 22px rgba(245,87,108,0.42);
+    }
+
+    .btn-gen:hover  { transform: translateY(-2px); box-shadow: 0 9px 28px rgba(245,87,108,0.52); }
+    .btn-gen:active { transform: translateY(0); }
+
+    .url-box {
+      display: none;
+      margin-top: 22px;
+      padding: 18px;
+      background: rgba(255,215,0,0.07);
+      border: 1px solid rgba(255,215,0,0.22);
+      border-radius: 13px;
+      animation: fadeUp 0.35s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .url-box-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,215,0,0.65);
+      margin-bottom: 9px;
+    }
+
+    .url-box-text {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: #ffd700;
+      word-break: break-all;
+      line-height: 1.65;
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 11px;
+      padding: 6px 13px;
+      background: rgba(255,215,0,0.13);
+      border: 1px solid rgba(255,215,0,0.28);
+      border-radius: 7px;
+      color: #ffd700;
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-copy:hover { background: rgba(255,215,0,0.24); }
+
+    /* ════════════════ Canvas Mode ════════════════ */
+    #canvasWrap {
+      display: none;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    #bdCanvas { display: block; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ Edit Mode ════════ -->
+  <div id="editMode">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-emoji">🎂</span>
+        <div class="card-title">お誕生日URL生成</div>
+        <div class="card-sub">お祝いのページを今すぐ作成しましょう</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="nameIn">お祝い対象のお名前</label>
+        <input id="nameIn" class="form-input" type="text"
+               placeholder="例：田中 花子さん" maxlength="30" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="msgIn">お祝いメッセージ</label>
+        <textarea id="msgIn" class="form-textarea"
+                  placeholder="例：お誕生日おめでとうございます！&#10;素敵な一年になりますように♪"
+                  maxlength="200"></textarea>
+      </div>
+
+      <button class="btn-gen" onclick="generateURL()">🎉 お祝いURLを生成する</button>
+
+      <div class="url-box" id="urlBox">
+        <div class="url-box-label">生成されたURL</div>
+        <div class="url-box-text" id="urlText"></div>
+        <button class="btn-copy" id="copyBtn" onclick="copyURL()">📋 コピーする</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ Canvas Mode ════════ -->
+  <div id="canvasWrap">
+    <canvas id="bdCanvas"></canvas>
+  </div>
+
+  <script>
+    'use strict';
+
+    /* ───────────────────────────────
+       URL Parameter Routing
+    ─────────────────────────────── */
+    const sp     = new URLSearchParams(location.search);
+    const isEdit = sp.get('edit') !== 'false';   // default (no param) → edit
+    const pName  = sp.get('name')    || '';
+    const pMsg   = sp.get('message') || '';
+
+    if (isEdit) {
+      document.getElementById('editMode').style.display = 'flex';
+    } else {
+      document.getElementById('canvasWrap').style.display = 'block';
+      startCanvas(
+        pName || 'あなた',
+        pMsg  || 'お誕生日おめでとうございます！'
+      );
+    }
+
+    /* ───────────────────────────────
+       Edit Mode — Generate URL
+    ─────────────────────────────── */
+    function generateURL() {
+      const name = document.getElementById('nameIn').value.trim();
+      const msg  = document.getElementById('msgIn').value.trim();
+      if (!name) { document.getElementById('nameIn').focus(); return; }
+
+      const url = location.origin + location.pathname
+        + '?edit=false'
+        + '&name='    + encodeURIComponent(name)
+        + '&message=' + encodeURIComponent(msg);
+
+      document.getElementById('urlText').textContent = url;
+      const box = document.getElementById('urlBox');
+      box.style.display = 'none';             // reset animation
+      void box.offsetWidth;
+      box.style.display = 'block';
+    }
+
+    /* ───────────────────────────────
+       Edit Mode — Copy URL
+    ─────────────────────────────── */
+    function copyURL() {
+      const url = document.getElementById('urlText').textContent;
+      const btn = document.getElementById('copyBtn');
+      const reset = () => { btn.textContent = '📋 コピーする'; };
+
+      (navigator.clipboard
+        ? navigator.clipboard.writeText(url)
+        : Promise.reject()
+      ).then(() => {
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(reset, 2500);
+      }).catch(() => {
+        // Clipboard API fallback
+        const ta = document.createElement('textarea');
+        ta.value = url;
+        ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        btn.textContent = '✅ コピーしました！';
+        setTimeout(reset, 2500);
+      });
+    }
+
+    /* ═══════════════════════════════════════════
+       Canvas Birthday Animation
+    ═══════════════════════════════════════════ */
+    function startCanvas(displayName, displayMsg) {
+      const canvas = document.getElementById('bdCanvas');
+      const ctx    = canvas.getContext('2d');
+
+      const FONT = "'Yu Gothic UI','Hiragino Sans','Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif";
+      const PAL  = ['#ff6b9d','#ffd700','#6bcb77','#4d96ff','#ff922b','#cc5de8','#f06595','#74c0fc'];
+
+      /* ── Resize ── */
+      let W = 0, H = 0;
+      let stars = [];
+
+      function resize() {
+        W = canvas.width  = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+        stars = Array.from({ length: 130 }, () => ({
+          x:  Math.random() * W,
+          y:  Math.random() * H,
+          r:  Math.random() * 1.4 + 0.2,
+          ph: Math.random() * Math.PI * 2,
+          sp: Math.random() * 0.018 + 0.005,
+        }));
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      /* ── Confetti particles ── */
+      class Confetti {
+        constructor(init) { this.reset(init); }
+        reset(init) {
+          this.x   = Math.random() * W;
+          this.y   = init ? Math.random() * H : -(Math.random() * 20 + 5);
+          this.w   = Math.random() * 10 + 4;
+          this.h   = this.w * (Math.random() * 0.35 + 0.18);
+          this.vx  = (Math.random() - 0.5) * 2.4;
+          this.vy  = Math.random() * 2 + 1.2;
+          this.rot = Math.random() * Math.PI * 2;
+          this.rv  = (Math.random() - 0.5) * 0.13;
+          this.col = PAL[Math.floor(Math.random() * PAL.length)];
+          this.circ = Math.random() > 0.35;
+          this.al  = Math.random() * 0.4 + 0.55;
+        }
+        update() {
+          this.x += this.vx; this.y += this.vy; this.rot += this.rv;
+          if (this.y > H + 18) this.reset(false);
+        }
+        draw() {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rot);
+          ctx.globalAlpha = this.al;
+          ctx.fillStyle   = this.col;
+          if (this.circ) {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+          }
+          ctx.restore();
+        }
+      }
+      const confetti = Array.from({ length: 180 }, () => new Confetti(true));
+
+      /* ── Firework burst particles ── */
+      const fwp = [];
+
+      class FWP {
+        constructor(x, y, col) {
+          const ang = Math.random() * Math.PI * 2;
+          const spd = Math.random() * 5.5 + 1.2;
+          this.x = x; this.y = y;
+          this.vx = Math.cos(ang) * spd;
+          this.vy = Math.sin(ang) * spd;
+          this.col  = col;
+          this.life = 1;
+          this.dec  = Math.random() * 0.016 + 0.01;
+          this.r    = Math.random() * 2.5 + 0.6;
+          this.tx = []; this.ty = [];   // trail
+        }
+        update() {
+          this.tx.push(this.x); this.ty.push(this.y);
+          if (this.tx.length > 6) { this.tx.shift(); this.ty.shift(); }
+          this.vx *= 0.97;
+          this.vy  = this.vy * 0.97 + 0.075;
+          this.x  += this.vx;
+          this.y  += this.vy;
+          this.life -= this.dec;
+        }
+        draw() {
+          if (this.life <= 0) return;
+          for (let i = 0; i < this.tx.length; i++) {
+            const a = (i / this.tx.length) * this.life * 0.35;
+            ctx.save();
+            ctx.globalAlpha = a;
+            ctx.fillStyle   = this.col;
+            ctx.beginPath();
+            ctx.arc(this.tx[i], this.ty[i], this.r * 0.45, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          ctx.save();
+          ctx.globalAlpha = this.life;
+          ctx.shadowBlur  = 14;
+          ctx.shadowColor = this.col;
+          ctx.fillStyle   = this.col;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function explode() {
+        const x  = W * (0.15 + Math.random() * 0.7);
+        const y  = H * (0.08 + Math.random() * 0.42);
+        const c1 = PAL[Math.floor(Math.random() * PAL.length)];
+        const c2 = PAL[Math.floor(Math.random() * PAL.length)];
+        const n  = Math.floor(Math.random() * 45 + 70);
+        for (let i = 0; i < n; i++)           fwp.push(new FWP(x, y, c1));
+        for (let i = 0; i < n * 0.35; i++)    fwp.push(new FWP(x, y, c2));
+      }
+      explode();
+      setInterval(explode, 2000);
+
+      /* ── Floating emoji bubbles ── */
+      const EM = ['🎈','⭐','💛','🌟','🎀','✨','🎉','🎊'];
+
+      class FloatEM {
+        constructor(init) { this.reset(init); }
+        reset(init) {
+          this.x  = Math.random() * W;
+          this.y  = init ? Math.random() * H : H + 32;
+          this.vy = -(Math.random() * 1.2 + 0.4);
+          this.vx = (Math.random() - 0.5) * 0.55;
+          this.sz = Math.random() * 20 + 12;
+          this.al = Math.random() * 0.5 + 0.38;
+          this.em = EM[Math.floor(Math.random() * EM.length)];
+        }
+        update() {
+          this.x += this.vx; this.y += this.vy;
+          if (this.y < -42) this.reset(false);
+        }
+        draw() {
+          ctx.save();
+          ctx.globalAlpha = this.al;
+          ctx.font = `${this.sz}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.fillText(this.em, this.x, this.y);
+          ctx.restore();
+        }
+      }
+      const floats = Array.from({ length: 24 }, () => new FloatEM(true));
+
+      /* ── Text helpers ── */
+      function glowText(text, x, y, size, bold, color, glowCol, blur) {
+        ctx.save();
+        ctx.font         = `${bold ? 'bold ' : ''}${size}px ${FONT}`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowBlur   = blur;
+        ctx.shadowColor  = glowCol;
+        ctx.fillStyle    = color;
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function wrapText(text, maxW, size, bold) {
+        ctx.save();
+        ctx.font = `${bold ? 'bold ' : ''}${size}px ${FONT}`;
+        const lines = [];
+        let cur = '';
+        for (const ch of text) {
+          if (ch === '\n') { lines.push(cur); cur = ''; continue; }
+          const test = cur + ch;
+          if (ctx.measureText(test).width > maxW && cur.length) {
+            lines.push(cur); cur = ch;
+          } else { cur = test; }
+        }
+        if (cur) lines.push(cur);
+        ctx.restore();
+        return lines;
+      }
+
+      /* ── Ring decoration ── */
+      function drawRings(t) {
+        const cx = W / 2, cy = H / 2;
+        const baseR = Math.min(W, H) * 0.42;
+        for (let i = 0; i < 6; i++) {
+          const ang = (i / 6) * Math.PI * 2 + t * 0.25;
+          const px  = cx + Math.cos(ang) * baseR;
+          const py  = cy + Math.sin(ang) * baseR;
+          const col = PAL[i % PAL.length];
+          ctx.save();
+          ctx.globalAlpha  = 0.15 + Math.sin(t + i) * 0.05;
+          ctx.strokeStyle  = col;
+          ctx.lineWidth    = 1.5;
+          ctx.shadowBlur   = 18;
+          ctx.shadowColor  = col;
+          ctx.beginPath();
+          ctx.arc(px, py, 18 + Math.sin(t * 1.2 + i) * 4, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      /* ── Main animation loop ── */
+      let tSec = 0;
+      let fade = 0;
+
+      function tick(now) {
+        requestAnimationFrame(tick);
+        tSec += 0.016;
+        fade  = Math.min(1, fade + 0.007);
+
+        /* Background gradient */
+        const bg = ctx.createLinearGradient(0, 0, W, H);
+        bg.addColorStop(0,   `hsl(${240 + Math.sin(now / 5000) * 18}, 72%, 7%)`);
+        bg.addColorStop(0.5, `hsl(${268 + Math.sin(now / 7000) * 14}, 62%, 11%)`);
+        bg.addColorStop(1,   `hsl(${220 + Math.sin(now / 6200) * 22}, 80%, 6%)`);
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        /* Twinkling stars */
+        for (const s of stars) {
+          s.ph += s.sp;
+          const al = (Math.sin(s.ph) + 1) * 0.38 + 0.04;
+          ctx.save();
+          ctx.globalAlpha = al;
+          ctx.fillStyle   = '#ffffff';
+          ctx.shadowBlur  = 5;
+          ctx.shadowColor = '#c8e6ff';
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        /* Ring decorations */
+        drawRings(tSec);
+
+        /* Floating emoji */
+        for (const f of floats) { f.update(); f.draw(); }
+
+        /* Confetti */
+        for (const c of confetti) { c.update(); c.draw(); }
+
+        /* Firework particles */
+        for (let i = fwp.length - 1; i >= 0; i--) {
+          fwp[i].update();
+          fwp[i].draw();
+          if (fwp[i].life <= 0) fwp.splice(i, 1);
+        }
+
+        /* ─── Text layer ─── */
+        ctx.globalAlpha = fade;
+
+        /* "Happy Birthday!" — rainbow cycling */
+        const hbSz  = Math.min(W / 10, 66);
+        const hbY   = H * 0.21 + Math.sin(tSec * 0.75) * 7;
+        const rbHue = (now * 0.1) % 360;
+        glowText(
+          '🎂 Happy Birthday! 🎂',
+          W / 2, hbY, hbSz, true,
+          `hsl(${rbHue},100%,68%)`, '#ffffff', 34
+        );
+
+        /* Name — large gold pulsing */
+        const nmSz  = Math.min(W / 7.5, 90);
+        const nmScl = 1 + Math.sin(tSec * 1.1) * 0.022;
+        const nmY   = H * 0.46;
+        ctx.save();
+        ctx.translate(W / 2, nmY);
+        ctx.scale(nmScl, nmScl);
+        ctx.font         = `bold ${nmSz}px ${FONT}`;
+        ctx.textAlign    = 'center';
+        ctx.textBaseline = 'middle';
+        // Multi-pass glow
+        for (let g = 0; g < 3; g++) {
+          ctx.shadowBlur  = 20 + g * 14;
+          ctx.shadowColor = '#ffd700';
+          ctx.fillStyle   = '#fffde7';
+          ctx.fillText(displayName, 0, 0);
+        }
+        ctx.restore();
+
+        /* Divider sparkle line */
+        const divY = nmY + nmSz * 0.65 + 14;
+        const divW = Math.min(W * 0.5, 320);
+        const grd  = ctx.createLinearGradient(W / 2 - divW / 2, 0, W / 2 + divW / 2, 0);
+        grd.addColorStop(0,   'rgba(255,215,0,0)');
+        grd.addColorStop(0.5, `rgba(255,215,0,${0.5 + Math.sin(tSec * 2) * 0.2})`);
+        grd.addColorStop(1,   'rgba(255,215,0,0)');
+        ctx.save();
+        ctx.globalAlpha = fade;
+        ctx.strokeStyle = grd;
+        ctx.lineWidth   = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 - divW / 2, divY);
+        ctx.lineTo(W / 2 + divW / 2, divY);
+        ctx.stroke();
+        ctx.restore();
+
+        /* Message text — wrapped */
+        const msgSz    = Math.min(W / 40, 22);
+        const msgLines = wrapText(displayMsg, W * 0.82, msgSz, false);
+        const lineH    = msgSz * 1.78;
+        const msgBase  = divY + 22;
+
+        for (let i = 0; i < msgLines.length; i++) {
+          const shimmer = 0.82 + Math.sin(tSec * 0.85 + i * 0.65) * 0.12;
+          ctx.save();
+          ctx.globalAlpha  = fade * shimmer;
+          ctx.font         = `${msgSz}px ${FONT}`;
+          ctx.textAlign    = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowBlur   = 10;
+          ctx.shadowColor  = '#4d96ff';
+          ctx.fillStyle    = 'rgba(255,255,255,0.93)';
+          ctx.fillText(msgLines[i], W / 2, msgBase + i * lineH);
+          ctx.restore();
+        }
+
+        ctx.globalAlpha = 1;
+      }
+
+      requestAnimationFrame(tick);
+    }
+  </script>
+</body>
+</html>
